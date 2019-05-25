@@ -14,8 +14,12 @@ public class MyAutoController extends CarController{
 		
 		private boolean isFollowingWall = false; // This is set to true when the car starts sticking to a wall.
 		
+		private boolean wallFollowingMode = true;
+		
 		// Car Speed to move at
 		private final int CAR_MAX_SPEED = 1;
+		
+		private DrivingStrategy strategy;
 		
 		public MyAutoController(Car car) {
 			super(car);
@@ -28,27 +32,9 @@ public class MyAutoController extends CarController{
 			// Gets what the car can see
 			HashMap<Coordinate, MapTile> currentView = getView();
 			
-			// checkStateChange();
-			if(getSpeed() < CAR_MAX_SPEED){       // Need speed to turn and progress toward the exit
-				applyForwardAcceleration();   // Tough luck if there's a wall in the way
-			}
-			if (isFollowingWall) {
-				// If wall no longer on left, turn left
-				if(!checkFollowingWall(getOrientation(), currentView)) {
-					turnLeft();
-				} else {
-					// If wall on left and wall straight ahead, turn right
-					if(checkWallAhead(getOrientation(), currentView)) {
-						turnRight();
-					}
-				}
-			} else {
-				// Start wall-following (with wall on left) as soon as we see a wall straight ahead
-				if(checkWallAhead(getOrientation(),currentView)) {
-					turnRight();
-					isFollowingWall = true;
-				}
-			}
+			strategy = new TraverseStrategy(this);
+			((TraverseStrategy) strategy).driving(currentView);
+			
 		}
 
 		/**
@@ -57,7 +43,7 @@ public class MyAutoController extends CarController{
 		 * @param currentView what the car can currently see
 		 * @return
 		 */
-		private boolean checkWallAhead(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView){
+		public boolean checkWallAhead(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView){
 			switch(orientation){
 			case EAST:
 				return checkEast(currentView);
@@ -78,21 +64,21 @@ public class MyAutoController extends CarController{
 		 * @param currentView
 		 * @return
 		 */
-		private boolean checkFollowingWall(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView) {
-			
-			switch(orientation){
-			case EAST:
-				return checkNorth(currentView);
-			case NORTH:
-				return checkWest(currentView);
-			case SOUTH:
-				return checkEast(currentView);
-			case WEST:
-				return checkSouth(currentView);
-			default:
-				return false;
-			}	
-		}
+//		public boolean checkFollowingWall(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView) {
+//			
+//			switch(orientation){
+//			case EAST:
+//				return checkNorth(currentView);
+//			case NORTH:
+//				return checkWest(currentView);
+//			case SOUTH:
+//				return checkEast(currentView);
+//			case WEST:
+//				return checkSouth(currentView);
+//			default:
+//				return false;
+//			}	
+//		}
 		
 		/**
 		 * Method below just iterates through the list and check in the correct coordinates.
@@ -149,5 +135,15 @@ public class MyAutoController extends CarController{
 			}
 			return false;
 		}
+		
+		public int getMaxSpeed() { return this.CAR_MAX_SPEED; }
+		
+		public boolean IsFollowingWall() {return this.isFollowingWall; }
+
+		public void setIsFollowingWall(boolean b) {	this.isFollowingWall = b;}
+		
+		public boolean getWallFollowing() { return this.wallFollowingMode; }
+		
+		public void switchWallFollowingMode() { this.wallFollowingMode = !this.wallFollowingMode; }
 		
 	}
