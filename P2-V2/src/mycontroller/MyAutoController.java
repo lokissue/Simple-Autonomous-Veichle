@@ -7,7 +7,7 @@ import java.util.HashMap;
 import tiles.MapTile;
 import utilities.Coordinate;
 import world.WorldSpatial;
-
+//
 public class MyAutoController extends CarController{		
 		// How many minimum units the wall is away from the player.
 		private int wallSensitivity = 1;
