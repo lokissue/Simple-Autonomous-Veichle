@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import tiles.MapTile;
 import utilities.Coordinate;
 
-public abstract class BrowsingStrategy extends BFSRoutingStrategy{
+public class BrowsingStrategy extends BFSRouting{
+	
+	public BrowsingStrategy() {}
 
 	@Override
 	public LinkedList<Coordinate> getRoute(MapTile[][] map, LinkedList<Coordinate> location, Coordinate curPosition) {
@@ -20,5 +22,10 @@ public abstract class BrowsingStrategy extends BFSRoutingStrategy{
 			}
 		}
 		return path;
+	}
+
+	@Override
+	public String getType() {
+		return "browsing";
 	}
 }

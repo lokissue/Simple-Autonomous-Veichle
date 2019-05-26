@@ -3,13 +3,18 @@ package mycontroller;
 import java.util.LinkedList;
 
 import tiles.MapTile;
+import tiles.TrapTile;
+import tiles.MapTile.Type;
 import utilities.Coordinate;
 
-public abstract class BFSRoutingStrategy {
+public abstract class BFSRouting implements IRouteStrategy{
+	
+	public static final int REACHABLE_COST = 1; 
+	public static final int LAVA_COST = 50; 
 	
 	public static final int[][] directions = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 	public static final int CANNOT_REACH = -1;
-	//
+	
 	/**
 	 * 
 	 * @param map  the world
@@ -17,8 +22,8 @@ public abstract class BFSRoutingStrategy {
 	 * @param curPosition  the current position
 	 * @return  the best route to follow
 	 */
-	public abstract LinkedList<Coordinate> getRoute(MapTile[][] map, 
-			LinkedList<Coordinate> location, Coordinate curPosition);
+//	public abstract LinkedList<Coordinate> getRoute(MapTile[][] map, 
+//			LinkedList<Coordinate> location, Coordinate curPosition);
 	
 	
 	/**
@@ -78,5 +83,19 @@ public abstract class BFSRoutingStrategy {
 		return Integer.MAX_VALUE;
 	}
 	
-	public abstract int getTraverseCost(MapTile mt);
+	public int getTraverseCost(MapTile mt) {
+		if(mt == null)
+			return REACHABLE_COST;
+		if(mt.getType() == Type.START || mt.getType() == Type.ROAD || mt.getType() == Type.FINISH)
+			return REACHABLE_COST;
+		if(mt.getType() == Type.TRAP) {
+			TrapTile trapTile = (TrapTile) mt;
+			if(trapTile.getTrap().equals("lava")) {
+				return LAVA_COST;
+			} else {
+				return REACHABLE_COST;
+			}
+		}
+		return CANNOT_REACH;
+	}
 }

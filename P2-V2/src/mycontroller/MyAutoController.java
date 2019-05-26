@@ -20,8 +20,8 @@ public class MyAutoController extends CarController{
 	private LinkedList<Coordinate> parcelLocation;
 	private LinkedList<Coordinate> destLocation;
 	private LinkedList<Coordinate> route;
-	private BFSRoutingStrategy browsingStrategy;
-	private BFSRoutingStrategy findingStrategy;
+	private IRouteStrategy strategy;
+
 
 	public MyAutoController(Car car) {
 		super(car);
@@ -29,14 +29,10 @@ public class MyAutoController extends CarController{
 		parcelLocation = new LinkedList<Coordinate>();
 		route = new LinkedList<Coordinate>(); 
 		destLocation = new LinkedList<Coordinate>();
-		if(Simulation.toConserve() == StrategyMode.HEALTH) {
-			browsingStrategy = new MinHealthUsageBrowsingStrategy();
-			findingStrategy = new MinHealthUsageFindingStrategy();
-		}
-		else {
-			browsingStrategy = new MinFuelUsageBrowsingStrategy();
-			findingStrategy = new MinFuelUsageFindingStrategy();
-		}
+		
+//		browsingStrategy = new BrowsingStrategy();
+//		findingStrategy = new FindingStrategy();
+		
 	}
 
 	@Override
@@ -52,11 +48,14 @@ public class MyAutoController extends CarController{
 				numParcelsFound() < numParcels() ? parcelLocation : destLocation; 
 		
 		// find the route to target
-		route = findingStrategy.getRoute(map, targets, curPosition);
+		strategy = RouteStrategyFactory.getInstance().getStrategy("finding");
+		route = strategy.getRoute(map, targets, curPosition);
+		
 		
 		// if no route is finded, need to browse the map to get more info
 		if(route == null || route.isEmpty()) {
-			route = browsingStrategy.getRoute(map, null, curPosition);
+			strategy = RouteStrategyFactory.getInstance().getStrategy("browsing");
+			route = strategy.getRoute(map, null, curPosition);
 		}
 		
 		// follow the selected route

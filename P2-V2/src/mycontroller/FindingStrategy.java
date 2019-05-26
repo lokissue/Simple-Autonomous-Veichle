@@ -5,8 +5,10 @@ import java.util.LinkedList;
 import tiles.MapTile;
 import utilities.Coordinate;
 
-public abstract class FindingStrategy extends BFSRoutingStrategy{
-
+public class FindingStrategy extends BFSRouting{
+	
+	public FindingStrategy() {}
+	
 	@Override
 	public LinkedList<Coordinate> getRoute(MapTile[][] map, 
 			LinkedList<Coordinate> location, Coordinate curPosition){
@@ -22,5 +24,10 @@ public abstract class FindingStrategy extends BFSRoutingStrategy{
 			}
 		}
 		return minPath;
+	}
+
+	@Override
+	public String getType() {
+		return "finding";
 	}
 }
