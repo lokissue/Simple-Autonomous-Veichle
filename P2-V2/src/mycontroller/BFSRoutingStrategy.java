@@ -9,7 +9,7 @@ public abstract class BFSRoutingStrategy {
 	
 	public static final int[][] directions = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 	public static final int CANNOT_REACH = -1;
-	
+	//
 	/**
 	 * 
 	 * @param map  the world
