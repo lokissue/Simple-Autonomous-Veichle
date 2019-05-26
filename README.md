@@ -5,8 +5,8 @@ Car has limited view on the map, so the A* algorithm may not be suitable here.
 
 Use Strategy pattern
 
-1.Car traverses the map along the wall (wall-following) to search parcels.
+1. Car traverse map use wall-following and BFS route selection
 
-2.Car leaves the wall as long as a parcel is spotted
+2. Record locations in sight while traversing (apply weight)
 
-3.Parcel picked, continue wall-following.
+3. Pick up parcel when spotted and number of required parcels is not met
