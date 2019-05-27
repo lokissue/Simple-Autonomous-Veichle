@@ -9,20 +9,25 @@ import utilities.Coordinate;
 
 public abstract class BFSRouting implements IRouteStrategy{
 	
-	public static final int REACHABLE_COST = 1; 
-//	public static final int LAVA_COST = 40; 
+//	public static final int REACHABLE_COST = 1; 
+//	public static final int LAVA_COST = 50; 
 	
 	public static final int[][] DIRECTIONS = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 	public static final int UNREACHABLE = -1;
 	
-	private int LAVA_COST;
+	private int lavaCost;
+	private int reachableCost;
 	
 	public BFSRouting(String mode) {
 		if(mode.equals("health")) {
-			this.LAVA_COST = 50;
-		}else {
-			this.LAVA_COST = 2;
+			this.reachableCost = 1;
+			this.lavaCost = 50;
 		}
+		else if(mode.equals("fuel")) {
+			this.reachableCost = 1;
+			this.lavaCost = 2;
+		}
+		//else if(mode.eqauls("")){}
 	}
 	
 	/**
@@ -84,15 +89,15 @@ public abstract class BFSRouting implements IRouteStrategy{
 	
 	public int getTraverseCost(MapTile mt) {
 		if(mt == null)
-			return REACHABLE_COST;
+			return reachableCost;
 		if(mt.getType() == Type.START || mt.getType() == Type.ROAD || mt.getType() == Type.FINISH)
-			return REACHABLE_COST;
+			return reachableCost;
 		if(mt.getType() == Type.TRAP) {
 			TrapTile trapTile = (TrapTile) mt;
 			if(trapTile.getTrap().equals("lava")) {
-				return LAVA_COST;
+				return lavaCost;
 			} else {
-				return REACHABLE_COST;
+				return reachableCost;
 			}
 		}
 		return UNREACHABLE;
