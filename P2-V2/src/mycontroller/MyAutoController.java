@@ -21,17 +21,16 @@ public class MyAutoController extends CarController{
 	private LinkedList<Coordinate> destLocation;
 	private LinkedList<Coordinate> route;
 	private IRouteStrategy strategy;
-
-
+	private String mode;
+	
 	public MyAutoController(Car car) {
 		super(car);
 		map = new MapTile[mapWidth() + 1][mapHeight() + 1];
 		parcelLocation = new LinkedList<Coordinate>();
 		route = new LinkedList<Coordinate>(); 
 		destLocation = new LinkedList<Coordinate>();
-		
-//		browsingStrategy = new BrowsingStrategy();
-//		findingStrategy = new FindingStrategy();
+
+		mode = Simulation.toConserve().toString().toLowerCase();
 		
 	}
 
@@ -48,13 +47,13 @@ public class MyAutoController extends CarController{
 				numParcelsFound() < numParcels() ? parcelLocation : destLocation; 
 		
 		// find the route to target
-		strategy = RouteStrategyFactory.getInstance().getStrategy("finding");
+		strategy = RouteStrategyFactory.getInstance().getStrategy("finding", mode);
 		route = strategy.getRoute(map, targets, curPosition);
 		
 		
 		// if no route is finded, need to browse the map to get more info
 		if(route == null || route.isEmpty()) {
-			strategy = RouteStrategyFactory.getInstance().getStrategy("browsing");
+			strategy = RouteStrategyFactory.getInstance().getStrategy("browsing", mode);
 			route = strategy.getRoute(map, null, curPosition);
 		}
 		

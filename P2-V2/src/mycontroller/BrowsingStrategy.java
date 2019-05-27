@@ -7,6 +7,10 @@ import utilities.Coordinate;
 
 public class BrowsingStrategy extends BFSRouting{
 	
+	public BrowsingStrategy(String mode) {
+		super(mode);
+	}
+
 	@Override
 	public LinkedList<Coordinate> getRoute(MapTile[][] map, LinkedList<Coordinate> location, Coordinate curPosition) {
 		LinkedList<Coordinate> path = new LinkedList<Coordinate>();

@@ -4,11 +4,11 @@ public class RouteStrategyFactory {
 	private static RouteStrategyFactory instance = null;
 	private IRouteStrategy strategy = null; 
 	
-	public IRouteStrategy getStrategy(String type) {
+	public IRouteStrategy getStrategy(String type, String mode) {
 		if(type.equals("browsing")) {
-			strategy = new BrowsingStrategy();
+			strategy = new BrowsingStrategy(mode);
 		}else if(type.equals("finding")) {
-			strategy = new FindingStrategy();
+			strategy = new FindingStrategy(mode);
 		}
 		return strategy;
 	}

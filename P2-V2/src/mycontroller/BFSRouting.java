@@ -10,10 +10,20 @@ import utilities.Coordinate;
 public abstract class BFSRouting implements IRouteStrategy{
 	
 	public static final int REACHABLE_COST = 1; 
-	public static final int LAVA_COST = 50; 
+//	public static final int LAVA_COST = 40; 
 	
 	public static final int[][] DIRECTIONS = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
 	public static final int UNREACHABLE = -1;
+	
+	private int LAVA_COST;
+	
+	public BFSRouting(String mode) {
+		if(mode.equals("health")) {
+			this.LAVA_COST = 50;
+		}else {
+			this.LAVA_COST = 2;
+		}
+	}
 	
 	/**
 	 * using bfs to find the best route
