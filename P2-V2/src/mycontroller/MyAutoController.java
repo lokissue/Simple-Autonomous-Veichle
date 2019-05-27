@@ -1,153 +1,198 @@
 package mycontroller;
 
 import controller.CarController;
+import swen30006.driving.Simulation;
+import swen30006.driving.Simulation.StrategyMode;
 import world.Car;
+
 import java.util.HashMap;
+import java.util.LinkedList;
+
 
 import tiles.MapTile;
+import tiles.TrapTile;
+import tiles.MapTile.Type;
 import utilities.Coordinate;
-import world.WorldSpatial;
+import world.WorldSpatial.Direction;
 
 public class MyAutoController extends CarController{		
-		// How many minimum units the wall is away from the player.
-		private int wallSensitivity = 1;
-		
-		private boolean isFollowingWall = false; // This is set to true when the car starts sticking to a wall.
-		
-		// Car Speed to move at
-		private final int CAR_MAX_SPEED = 1;
-		
-		public MyAutoController(Car car) {
-			super(car);
-		}
-		
-		// Coordinate initialGuess;
-		// boolean notSouth = true;
-		@Override
-		public void update() {
-			// Gets what the car can see
-			HashMap<Coordinate, MapTile> currentView = getView();
-			
-			// checkStateChange();
-			if(getSpeed() < CAR_MAX_SPEED){       // Need speed to turn and progress toward the exit
-				applyForwardAcceleration();   // Tough luck if there's a wall in the way
-			}
-			if (isFollowingWall) {
-				// If wall no longer on left, turn left
-				if(!checkFollowingWall(getOrientation(), currentView)) {
-					turnLeft();
-				} else {
-					// If wall on left and wall straight ahead, turn right
-					if(checkWallAhead(getOrientation(), currentView)) {
-						turnRight();
-					}
-				}
-			} else {
-				// Start wall-following (with wall on left) as soon as we see a wall straight ahead
-				if(checkWallAhead(getOrientation(),currentView)) {
-					turnRight();
-					isFollowingWall = true;
-				}
-			}
-		}
+	private MapTile[][] map;
+	private LinkedList<Coordinate> parcelLocation;
+	private LinkedList<Coordinate> destLocation;
+	private LinkedList<Coordinate> route;
+	private BFSRoutingStrategy browsingStrategy;
+	private BFSRoutingStrategy findingStrategy;
 
-		/**
-		 * Check if you have a wall in front of you!
-		 * @param orientation the orientation we are in based on WorldSpatial
-		 * @param currentView what the car can currently see
-		 * @return
-		 */
-		private boolean checkWallAhead(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView){
-			switch(orientation){
-			case EAST:
-				return checkEast(currentView);
-			case NORTH:
-				return checkNorth(currentView);
-			case SOUTH:
-				return checkSouth(currentView);
-			case WEST:
-				return checkWest(currentView);
-			default:
-				return false;
-			}
+	public MyAutoController(Car car) {
+		super(car);
+		map = new MapTile[mapWidth() + 1][mapHeight() + 1];
+		parcelLocation = new LinkedList<Coordinate>();
+		route = new LinkedList<Coordinate>(); 
+		destLocation = new LinkedList<Coordinate>();
+		if(Simulation.toConserve() == StrategyMode.HEALTH) {
+			browsingStrategy = new MinHealthUsageBrowsingStrategy();
+			findingStrategy = new MinHealthUsageFindingStrategy();
 		}
-		
-		/**
-		 * Check if the wall is on your left hand side given your orientation
-		 * @param orientation
-		 * @param currentView
-		 * @return
-		 */
-		private boolean checkFollowingWall(WorldSpatial.Direction orientation, HashMap<Coordinate, MapTile> currentView) {
-			
-			switch(orientation){
-			case EAST:
-				return checkNorth(currentView);
-			case NORTH:
-				return checkWest(currentView);
-			case SOUTH:
-				return checkEast(currentView);
-			case WEST:
-				return checkSouth(currentView);
-			default:
-				return false;
-			}	
+		else {
+			browsingStrategy = new MinFuelUsageBrowsingStrategy();
+			findingStrategy = new MinFuelUsageFindingStrategy();
 		}
-		
-		/**
-		 * Method below just iterates through the list and check in the correct coordinates.
-		 * i.e. Given your current position is 10,10
-		 * checkEast will check up to wallSensitivity amount of tiles to the right.
-		 * checkWest will check up to wallSensitivity amount of tiles to the left.
-		 * checkNorth will check up to wallSensitivity amount of tiles to the top.
-		 * checkSouth will check up to wallSensitivity amount of tiles below.
-		 */
-		public boolean checkEast(HashMap<Coordinate, MapTile> currentView){
-			// Check tiles to my right
-			Coordinate currentPosition = new Coordinate(getPosition());
-			for(int i = 0; i <= wallSensitivity; i++){
-				MapTile tile = currentView.get(new Coordinate(currentPosition.x+i, currentPosition.y));
-				if(tile.isType(MapTile.Type.WALL)){
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public boolean checkWest(HashMap<Coordinate,MapTile> currentView){
-			// Check tiles to my left
-			Coordinate currentPosition = new Coordinate(getPosition());
-			for(int i = 0; i <= wallSensitivity; i++){
-				MapTile tile = currentView.get(new Coordinate(currentPosition.x-i, currentPosition.y));
-				if(tile.isType(MapTile.Type.WALL)){
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public boolean checkNorth(HashMap<Coordinate,MapTile> currentView){
-			// Check tiles to towards the top
-			Coordinate currentPosition = new Coordinate(getPosition());
-			for(int i = 0; i <= wallSensitivity; i++){
-				MapTile tile = currentView.get(new Coordinate(currentPosition.x, currentPosition.y+i));
-				if(tile.isType(MapTile.Type.WALL)){
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public boolean checkSouth(HashMap<Coordinate,MapTile> currentView){
-			// Check tiles towards the bottom
-			Coordinate currentPosition = new Coordinate(getPosition());
-			for(int i = 0; i <= wallSensitivity; i++){
-				MapTile tile = currentView.get(new Coordinate(currentPosition.x, currentPosition.y-i));
-				if(tile.isType(MapTile.Type.WALL)){
-					return true;
-				}
-			}
-			return false;
-		}
-		
 	}
+
+	@Override
+	public void update() {
+		// update the map we cached
+		recordMap();
+		
+		// get current position
+		Coordinate curPosition = new Coordinate(getPosition());
+		
+		// select targets, find parcel or find exit
+		LinkedList<Coordinate> targets = 
+				numParcelsFound() < numParcels() ? parcelLocation : destLocation; 
+		
+		// find the route to target
+		route = findingStrategy.getRoute(map, targets, curPosition);
+		
+		// if no route is finded, need to browse the map to get more info
+		if(route == null || route.isEmpty()) {
+			route = browsingStrategy.getRoute(map, null, curPosition);
+		}
+		
+		// follow the selected route
+		followRoute();
+	}
+	
+ 	private void followRoute() {
+ 		System.out.println(route);
+ 		applyForwardAcceleration();
+ 		if(route == null)
+ 			return;
+ 		if(route.size() < 1)
+ 			return;
+ 		
+		Coordinate next = route.get(1);
+		Coordinate cur = new Coordinate(getPosition());
+		if(next.x == cur.x) {
+			if(next.y + 1 == cur.y) {
+				moveSouth();
+			}
+			else if (next.y - 1 == cur.y){
+				moveNorth();
+			}
+		}
+		else if(next.y == cur.y) {
+			if(next.x + 1 == cur.x) {
+				moveWest();
+			}
+			else if (next.x - 1 == cur.x){
+				moveEast();
+			}
+		}
+	}
+
+	private void moveSouth() {
+		Direction d = getOrientation();
+		if(d == Direction.SOUTH) {
+			applyForwardAcceleration();
+		}
+		else if(d == Direction.NORTH) {
+			applyReverseAcceleration();
+		}
+		else if(d == Direction.EAST) {
+			turnRight();
+		}
+		else if(d == Direction.WEST){
+			turnLeft();
+		}
+		else {
+			throw new RuntimeException("No Direction");
+		}
+	}
+
+	private void moveNorth() {
+		Direction d = getOrientation();
+		if(d == Direction.NORTH) {
+			applyForwardAcceleration();
+		}
+		else if(d == Direction.SOUTH) {
+			applyReverseAcceleration();
+		}
+		else if(d == Direction.EAST) {
+			turnLeft();
+		}
+		else if(d == Direction.WEST){
+			turnRight();
+		}
+		else {
+			throw new RuntimeException("No Direction");
+		}
+	}
+
+	private void moveEast() {
+		Direction d = getOrientation();
+		if(d == Direction.EAST) {
+			applyForwardAcceleration();
+		}
+		else if(d == Direction.WEST) {
+			applyReverseAcceleration();
+		}
+		else if(d == Direction.NORTH) {
+			turnRight();
+		}
+		else if(d == Direction.SOUTH){
+			turnLeft();
+		}
+		else {
+			throw new RuntimeException("No Direction");
+		}
+	}
+
+	private void moveWest() {
+		Direction d = getOrientation();
+		if(d == Direction.WEST) {
+			applyForwardAcceleration();
+		}
+		else if(d == Direction.EAST) {
+			applyReverseAcceleration();
+		}
+		else if(d == Direction.NORTH) {
+			turnLeft();
+		}
+		else if(d == Direction.SOUTH){
+			turnRight();
+		}
+		else {
+			throw new RuntimeException("No Direction");
+		}
+	}
+
+	private void recordMap() {
+		HashMap<Coordinate, MapTile> currentView = getView();
+		Coordinate currentPosition = new Coordinate(getPosition());
+		parcelLocation.remove(currentPosition);
+		for(Coordinate c : currentView.keySet()) {
+			MapTile mt = currentView.get(c);
+			try {
+				map[c.x][c.y] = mt;
+			}catch (Exception e) {
+			}
+
+			if(mt.isType(Type.TRAP)) {
+				TrapTile trapTile = (TrapTile) mt;
+				if(trapTile.getTrap().equals("parcel")) {
+					if(!parcelLocation.contains(c))
+						parcelLocation.addFirst(c);
+				}
+			}
+			
+			if(mt.isType(Type.FINISH)) {
+				if(!destLocation.contains(c))
+					destLocation.addFirst(c);
+			}
+		}
+	}
+
+
+}
+

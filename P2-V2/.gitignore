@@ -1,0 +1,5 @@
+/bin/
+/log/
+.classpath
+.settings/*
+/src/log4j2.xml
