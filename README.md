@@ -14,4 +14,5 @@ Use Strategy pattern
 All strategy now can be created by singleton strategy factory. The BFS model credit to: Xinda Zheng
 
 Simple strategy pattern reference: https://dzone.com/articles/design-patterns-strategy
+
 Strategy pattern with factory: https://dzone.com/articles/java-the-strategy-pattern
