@@ -12,3 +12,5 @@ Use Strategy pattern
 3. Pick up parcel when spotted and number of required parcels is not met (parcel has high level of priority)
 
 All strategy now can be created by singleton strategy factory. The BFS model credit to: Xinda Zheng
+
+Strategy pattern reference: https://dzone.com/articles/design-patterns-strategy
