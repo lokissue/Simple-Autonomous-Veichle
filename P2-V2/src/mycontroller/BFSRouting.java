@@ -12,19 +12,8 @@ public abstract class BFSRouting implements IRouteStrategy{
 	public static final int REACHABLE_COST = 1; 
 	public static final int LAVA_COST = 50; 
 	
-	public static final int[][] directions = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-	public static final int CANNOT_REACH = -1;
-	
-	/**
-	 * 
-	 * @param map  the world
-	 * @param location  the possible targets
-	 * @param curPosition  the current position
-	 * @return  the best route to follow
-	 */
-//	public abstract LinkedList<Coordinate> getRoute(MapTile[][] map, 
-//			LinkedList<Coordinate> location, Coordinate curPosition);
-	
+	public static final int[][] DIRECTIONS = new int[][] {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+	public static final int UNREACHABLE = -1;
 	
 	/**
 	 * using bfs to find the best route
@@ -48,7 +37,7 @@ public abstract class BFSRouting implements IRouteStrategy{
 		while(!queue.isEmpty()) {
 			Coordinate cur = queue.poll();
 			int curCost = costMap[cur.x][cur.y];
-			for(int[] d : directions) {
+			for(int[] d : DIRECTIONS) {
 				int x = cur.x + d[0];
 				int y = cur.y + d[1];
 				if(x < 0 || y < 0 || 
@@ -57,7 +46,7 @@ public abstract class BFSRouting implements IRouteStrategy{
 				}
 				MapTile mt = map[x][y];
 				int cost = getTraverseCost(mt);
-				if(cost == CANNOT_REACH) {
+				if(cost == UNREACHABLE) {
 					continue;
 				}
 				if(costMap[x][y] == 0 || cost + curCost < costMap[x][y]) {
@@ -96,6 +85,6 @@ public abstract class BFSRouting implements IRouteStrategy{
 				return REACHABLE_COST;
 			}
 		}
-		return CANNOT_REACH;
+		return UNREACHABLE;
 	}
 }

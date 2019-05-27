@@ -7,8 +7,6 @@ import utilities.Coordinate;
 
 public class FindingStrategy extends BFSRouting{
 	
-	public FindingStrategy() {}
-	
 	@Override
 	public LinkedList<Coordinate> getRoute(MapTile[][] map, 
 			LinkedList<Coordinate> location, Coordinate curPosition){
@@ -24,10 +22,5 @@ public class FindingStrategy extends BFSRouting{
 			}
 		}
 		return minPath;
-	}
-
-	@Override
-	public String getType() {
-		return "finding";
 	}
 }
