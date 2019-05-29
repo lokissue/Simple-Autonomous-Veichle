@@ -29,9 +29,7 @@ public class MyAutoController extends CarController{
 		parcelLocation = new LinkedList<Coordinate>();
 		route = new LinkedList<Coordinate>(); 
 		destLocation = new LinkedList<Coordinate>();
-
 		mode = Simulation.toConserve().toString().toLowerCase();
-		
 	}
 
 	@Override
@@ -51,7 +49,7 @@ public class MyAutoController extends CarController{
 		route = strategy.getRoute(map, targets, curPosition);
 		
 		
-		// if no route is finded, need to browse the map to get more info
+		// if no route is found, need to browse the map to get more info
 		if(route == null || route.isEmpty()) {
 			strategy = RouteStrategyFactory.getInstance().getStrategy("browsing", mode);
 			route = strategy.getRoute(map, null, curPosition);
