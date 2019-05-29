@@ -1,6 +1,8 @@
 # SWEN30006
 Autonomous Vehicles
 
+UML: https://www.draw.io/#G1h0PnPs-NrTwVMpSroCiwphK6Q-Eab32r
+
 Car has limited view on the map, so the A* algorithm may not be suitable here.
 
 Use Strategy pattern
